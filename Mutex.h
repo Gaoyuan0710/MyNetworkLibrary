@@ -18,7 +18,7 @@
 #define MUTEX_H
 
 #include <iostream>
-#include <pthread.d>
+#include <pthread.h>
 #include <boost/noncopyable.hpp>
 
 
@@ -39,7 +39,7 @@ class MutexLock : boost::noncopyable{
 			return pthread_mutex_lock(&mutex) == 0;
 		}
 		bool unlock(){
-			return pthread_mutex_lock(&mutex) == 0;
+			return pthread_mutex_unlock(&mutex) == 0;
 		}
 		pthread_mutex_t *getMutex(){
 			return &mutex;
@@ -48,7 +48,7 @@ class MutexLock : boost::noncopyable{
 
 class MutexLockGuard : boost::noncopyable{
 	private:
-		MutexLock mutex;
+		MutexLock &mutex;
 	public:
 		explicit MutexLockGuard(MutexLock &mutexLock) : mutex(mutexLock){
 			mutex.lock();
