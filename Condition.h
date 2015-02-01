@@ -21,7 +21,7 @@
 #include "Mutex.h"
 
 namespace liunian{
-class Condtion : {
+class Condtion :boost::noncopyable {
 	public:
 		explicit Condtion(MutexLock &mutex) : mutex_(mutex){
 			pthread_cond_init(&cond, NULL);
