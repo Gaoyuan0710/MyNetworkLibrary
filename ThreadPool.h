@@ -50,6 +50,7 @@ class ThreadPool : boost::noncopyable{
 		bool isFull() const;
 		Task takeWork();
 		void beginRunning();
+		void pthreadPoolmanager();
 
 		MutexLock mutex;
 		Condtion notEmpty;

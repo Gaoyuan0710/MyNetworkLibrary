@@ -35,7 +35,7 @@ void printString(const std::string& str)
 {
 	cout << str;
 	printf("finish with tid=%lu\n", pthread_self());
-	usleep(100*1000);
+	sleep(2);
   
 }
 
@@ -44,12 +44,12 @@ void test(int maxSize)
   cout << "Test ThreadPool with max queue size = " << maxSize << endl;
   ThreadPool pool("MainThreadPool");
   pool.setMaxQueueSize(maxSize);
-  pool.start(5);
+  pool.start(20);
 
   cout << "Adding" << endl;
 //  pool.addWork(print);
 //  pool.addWork(print);
-  for (int i = 0; i < 100; ++i)
+  for (int i = 0; i < maxSize; ++i)
   {
     char buf[32];
     snprintf(buf, sizeof buf, "task %d", i);
@@ -57,14 +57,14 @@ void test(int maxSize)
   }
   cout << "Done" << endl;
 
-//  sleep(1000);
+  sleep(1000);
 }
 
 int main()
 {
 //  test(0);
 //  test(1);
-//  test(5);
   test(10);
+//  test(10);
 //  test(50);
 }

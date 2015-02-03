@@ -15,11 +15,15 @@
 // =====================================================================================
 
 #include <boost/bind.hpp>
+#include <boost/function.hpp>
+
 #include <stdio.h>
 
 #include "ThreadPool.h"
 
 using namespace liunian;
+using std::cout;
+using std::endl;
 
 ThreadPool::ThreadPool(const string &name)
 		:mutex(),
@@ -41,6 +45,11 @@ void ThreadPool::start(int numThreads){
 
 	threads.reserve(numThreads);
 
+	boost::function<void ()> f;
+	f = boost::bind(&ThreadPool::pthreadPoolmanager, this);
+	Thread managerThread(f, "managerThread");
+	managerThread.start();
+
 	for (int i = 0; i < numThreads; i++){
 		char id[32];
 		snprintf(id, sizeof(id), "%d", i + 1);
@@ -58,7 +67,7 @@ void ThreadPool::stop(){
 		isRunning = false;
 		notEmpty.notigyAll();
 	}
-	//for_each(threads.begin(), threads.end(), boost::bind(&Thread::join, _1));
+	for_each(threads.begin(), threads.end(), boost::bind(&Thread::join, _1));
 }
 void ThreadPool::addWork(const Task &task){
 	if (threads.empty()){
@@ -85,6 +94,7 @@ ThreadPool::Task ThreadPool::takeWork(){
 		task = workQueue.front();
 		workQueue.pop();
 
+		
 		if (maxQueueSize > 0){
 			notFull.notigyAll();
 		}
@@ -107,5 +117,54 @@ void ThreadPool::beginRunning(){
 		if (task){
 			task();
 		}
+
+		int work_size = workQueue.size();
+		int pthread_num = threads.size();
+
+	
+		if (pthread_num / 3 > work_size){
+			cout << "Too Many Pthreads" << endl;
+
+			//exit thread;
+		}
+	}
+
+
+}
+
+void ThreadPool::pthreadPoolmanager(){
+	while (isRunning){
+		sleep(5);
+
+		int work_size = workQueue.size();
+		int pthread_num = threads.size();
+
+		cout << "Manager coming " << endl;
+		cout << "Thread Num is " << pthread_num << " work size is "<< work_size << endl;
+
+		if (pthread_num < work_size / 3){
+			cout << "Too Many Works To Do" << endl;
+			
+			for (int i = pthread_num; i < work_size / 3; i++){
+				char id[32];
+				snprintf(id, sizeof(id), "%d", i + 1);
+				threads.push_back(new Thread(boost::bind(&ThreadPool::beginRunning, this),
+								threadPoolName + id));
+				threads[i].start();
+			}
+
+		}
+		else if (pthread_num / 3 > work_size){
+			cout << "Too Many Pthreads" << endl;
+
+			int thread_need_exit = pthread_num / 3 - work_size;
+
+			cout << "Before :" << threads.size() << endl;
+			for (int i = 0; i < thread_need_exit; i++){
+				notEmpty.notify();
+			}
+			cout << "After :" << threads.size() << endl;
+		}
+
 	}
 }
