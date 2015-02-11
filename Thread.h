@@ -21,8 +21,11 @@
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
+#include <sys/types.h>
 #include <pthread.h>
 #include <string>
+
+#include <sys/syscall.h>
 
 using std::string;
 
@@ -42,18 +45,24 @@ class Thread : boost::noncopyable{
 		explicit Thread(const ThreadFunc &, const string &name = string());
 		~Thread();
 		bool start();
-
+ 
 		int join(pthread_t pthread);
+		int join();
 		pid_t getThreadId() const {
-			return pthreadId;
+			return *tid;
 		}
 		string getThreadName() const{
 			return threadName;
 		}
+//		pid_t tid() const{
+//			return *tid;
+//		}
 		static int getTotalThreadNum(){
 			return currentNum;
 		}
+		pid_t gettid();
 };
+
 }
 
 #endif

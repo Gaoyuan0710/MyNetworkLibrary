@@ -15,6 +15,7 @@
 // =====================================================================================
 
 #include <iostream>
+#include <unistd.h>
 
 #include "Thread.h"
 
@@ -47,4 +48,16 @@ int Thread::join(pthread_t pthread){
 
 	return pthread_join(pthread, NULL);
 }
+int Thread::join(){
+	isJoin = true;
 
+	return pthread_join(pthreadId, NULL);
+}
+
+namespace CurrentThread{
+	__thread int  t_cachedTid = 0;
+}
+
+pid_t Thread::gettid(){
+	return static_cast<pid_t>(::syscall(SYS_gettid));
+}

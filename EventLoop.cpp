@@ -15,23 +15,60 @@
 // =====================================================================================
 
 #include <iostream>
+#include <assert.h>
+
 #include "EventLoop.h"
+#include "Channel.h"
+#include "Epoller.h"
+#include "CurrentThread.h"
 
 using namespace liunian;
+using std::cout;
+using std::endl;
+
+__thread EventLoop* t_loopInThisThread = 0;
 
 EventLoop::EventLoop()
-		:loopFlag(false)
+		:loopFlag(false),
+		threadId(CurrentThread::tid())
 {
+	cout << "EventLoop Create " << this << "in thread"
+		<< threadId << endl;
+
+	if (t_loopInThisThread){
+		cout << "Another EventLoop " 
+			<< t_loopInThisThread 
+			<< "Exits in this thread " << threadId 
+			<< endl;
+	}
+	else{
+		t_loopInThisThread = this;
+	}
 	
 }
 EventLoop::~EventLoop(){
 
 }
 void EventLoop::loop(){
+
+	assertInLoopThread();
+
 	loopFlag = true;
 
 	while (loopFlag){
 		sleep(100);
 		loopFlag = false;
 	}
+}
+void EventLoop::updateChannel(Channel *channel){
+	//epoll->updateChannel(channel);
+}
+bool EventLoop::isInLoopThread(){
+	return threadId == CurrentThread::tid();
+} 
+
+void EventLoop::abortNotInLoopThread(){
+	cout << "EventLoop::abortNotInLoopThread - EventLoop " << this << " was created in threadId = "
+		<< threadId << "  current thread id  = "
+		<< CurrentThread::tid();
 }

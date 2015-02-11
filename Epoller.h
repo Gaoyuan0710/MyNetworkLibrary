@@ -28,19 +28,22 @@ using std::vector;
 
 namespace liunian{
 class Epoll{
-	typedef vector<struct epoll_event> EventList;
 	public:
+		typedef vector <struct epoll_event> EventList;
+		typedef vector <Channel *> ChannelList;
+		
 		Epoll(EventLoop *loop);
 		~Epoll();
-		void poll(vector<Channel *> *channel);
+		void poll(ChannelList *channelList);
 
 
 		bool updateChannel(Channel *channel);
-		void fillActiveChannels(int numEvents, vector<Channel *>*ChannelList) const;
-	//	bool removeChannel(Channel *channel);
+		bool removeChannel(Channel *channel);
+		void fillActiveChannels(int numEvents, 
+					ChannelList *channelList) const;
 	private:
 		int epollFd;
 		EventList events;
-}
+};
 }
 #endif

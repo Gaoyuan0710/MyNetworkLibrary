@@ -21,7 +21,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/function.hpp>
 
-#include "EventLoop.h"
+//#include "EventLoop.h"
 
 namespace liunian{
 class Channel : boost::noncopyable{
@@ -29,9 +29,33 @@ class Channel : boost::noncopyable{
 		typedef boost::function<void ()> EventCallBack;
 		Channel(EventLoop *loop, int sockfd);
 		void handleEvent();
+		void setReadCallBack(const EventCallBack &func){
+			readCallBack = func;
+		}
+		void setWriteCallBack(const EventCallBack &func){
+			writeCallBack = func;
+		}
+		void setErrorCallBack(const EventCallBack &func){
+			errorCallBack = func;
+		}
+		void setRevents(int revent);
+		int setIndex(int index);
+		void enableReading();
+		void enableWriting();
+		int getEvents();
+		int getSocket();
+		int getIndex();
+
 	private:
-
-
+		void update();
+		int index;
+		int socketfd;
+		int events;
+		int revents;
+		EventLoop *loop;
+		EventCallBack writeCallBack;
+		EventCallBack readCallBack;
+		EventCallBack errorCallBack;
 };
 }
 #endif

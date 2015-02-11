@@ -20,19 +20,31 @@
 #include <iostream>
 #include <pthread.h>
 #include <boost/noncopyable.hpp>
+#include <sys/types.h>
+
+#include "Thread.h"
 
 namespace liunian{
+class Channel;
+class Epoll;
+
 class EventLoop : boost::noncopyable{
 	public:
 		EventLoop();
 		~EventLoop();
 		void loop();
-		bool isInLoopThread() const{
-			return (this->threadId == pthread_self());
+		bool isInLoopThread();
+		void updateChannel(Channel *channel);
+		void assertInLoopThread(){
+			if (!isInLoopThread()){
+				abortNotInLoopThread();
+			}
 		}
 	private:
 		bool loopFlag;
 		const pid_t threadId;
+	//	Epoll epoll;
+		void abortNotInLoopThread();
 };
 }
 #endif
