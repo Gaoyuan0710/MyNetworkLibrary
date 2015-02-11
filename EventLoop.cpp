@@ -23,6 +23,8 @@
 #include "CurrentThread.h"
 
 using namespace liunian;
+using namespace CurrentThread;
+
 using std::cout;
 using std::endl;
 
@@ -30,6 +32,7 @@ __thread EventLoop* t_loopInThisThread = 0;
 
 EventLoop::EventLoop()
 		:loopFlag(false),
+		epoll(new Epoll(this)),
 		threadId(CurrentThread::tid())
 {
 	cout << "EventLoop Create " << this << "in thread"
@@ -56,12 +59,21 @@ void EventLoop::loop(){
 	loopFlag = true;
 
 	while (loopFlag){
-		sleep(100);
-		loopFlag = false;
+		activeChannels.clear();
+		epoll->poll(&activeChannels);
+		for (ChannelList::iterator it =
+					activeChannels.begin();
+					it != activeChannels.end();
+					it++){
+			(*it)->handleEvent();
+		}
 	}
 }
+void EventLoop::quit(){
+	loopFlag = false;
+}
 void EventLoop::updateChannel(Channel *channel){
-	//epoll->updateChannel(channel);
+	epoll->updateChannel(channel);
 }
 bool EventLoop::isInLoopThread(){
 	return threadId == CurrentThread::tid();

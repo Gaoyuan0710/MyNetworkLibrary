@@ -17,6 +17,7 @@
 #include <iostream>
 #include <vector>
 #include <sys/epoll.h>
+#include <errno.h>
 
 #include "Epoller.h"
 
@@ -25,7 +26,11 @@ using std::vector;
 using std::endl;
 using std::cout;
 
-Epoll::Epoll(){
+Epoll::Epoll(EventLoop *loop)
+		:loop(loop),
+		events(16)
+	
+{
 	epollFd = epoll_create(1);
 
 	if (epollFd <= 0){
@@ -41,14 +46,23 @@ void Epoll::poll(vector <Channel *> *channel){
 				-1);
 
 	if (fds == -1){
-		cout << "epoll_wait error" << endl;
+		cout << "epoll_wait error" << errno
+			<< " " << strerror(errno) 
+			<<  endl;
 		return ;
 	}
 	fillActiveChannels(fds, channel);
 }
-void Epoll::fillActiveChannels(int numEvents, vector<Channel *> *activeChannels) const{
+void Epoll::fillActiveChannels(int numEvents,
+			ChannelList *activeChannels) const{
+
+
+
 	for (int i = 0; i < numEvents; i++){
-		Channel *channelTemp = static_cast<Channel *> (events[i].data.ptr);
+		Channel *channelTemp = static_cast<Channel *>
+			(events[i].data.ptr);
+
+
 		channelTemp->setRevents(events[i].events);
 		activeChannels->push_back(channelTemp);
 	}
@@ -56,7 +70,7 @@ void Epoll::fillActiveChannels(int numEvents, vector<Channel *> *activeChannels)
 void Epoll::updateChannel(Channel *channel){
 	struct epoll_event temp;
 
-	int index = channel->getIndex();
+	const int index = channel->getIndex();
 
 	temp.data.ptr = channel;
 	temp.events = channel->getEvents();
@@ -64,10 +78,29 @@ void Epoll::updateChannel(Channel *channel){
 	int fd = channel->getSocket();
 
 	if (index == -1){
+		channels[fd] = channel;
+
 		channel->setIndex(1);
 		epoll_ctl(epollFd, EPOLL_CTL_ADD, fd, &temp);
 	}
 	else{
+
 		epoll_ctl(epollFd, EPOLL_CTL_MOD, fd, &temp);
 	}
+}
+void Epoll::removeChannel(Channel *channel){
+	int fd = channel->getSocket();
+
+	int index = channel->getIndex();
+
+	size_t n = channels.erase(fd);
+
+	struct epoll_event temp;
+
+	temp.data.ptr = channel;
+	temp.events = channel->getEvents();
+
+	epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, &temp);
+
+	channel->setIndex(-1);
 }

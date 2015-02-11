@@ -69,4 +69,6 @@ int Channel::getIndex(){
 int Channel::getEvents(){
 	return events;
 }
-
+int Channel::getSocket(){
+	return socketfd;
+}

@@ -24,6 +24,8 @@
 //#include "EventLoop.h"
 
 namespace liunian{
+class EventLoop;
+
 class Channel : boost::noncopyable{
 	public:
 		typedef boost::function<void ()> EventCallBack;
@@ -39,12 +41,15 @@ class Channel : boost::noncopyable{
 			errorCallBack = func;
 		}
 		void setRevents(int revent);
-		int setIndex(int index);
+		void setIndex(int index);
 		void enableReading();
 		void enableWriting();
 		int getEvents();
 		int getSocket();
 		int getIndex();
+		bool isNoEvent() const{
+			return events == 0;
+		}
 
 	private:
 		void update();

@@ -20,30 +20,35 @@
 #include <iostream>
 #include <sys/epoll.h>
 #include <vector>
+#include <map>
 
 #include "EventLoop.h"
 #include "Channel.h"
 
 using std::vector;
+using std::map;
 
 namespace liunian{
 class Epoll{
 	public:
 		typedef vector <struct epoll_event> EventList;
 		typedef vector <Channel *> ChannelList;
+		typedef map <int, Channel*> ChannelMap;
 		
 		Epoll(EventLoop *loop);
 		~Epoll();
 		void poll(ChannelList *channelList);
 
 
-		bool updateChannel(Channel *channel);
-		bool removeChannel(Channel *channel);
+		void updateChannel(Channel *channel);
+		void removeChannel(Channel *channel);
 		void fillActiveChannels(int numEvents, 
 					ChannelList *channelList) const;
 	private:
 		int epollFd;
 		EventList events;
+		EventLoop *loop;
+		ChannelMap channels;
 };
 }
 #endif

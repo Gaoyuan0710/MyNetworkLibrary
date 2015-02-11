@@ -21,8 +21,12 @@
 #include <pthread.h>
 #include <boost/noncopyable.hpp>
 #include <sys/types.h>
+#include <boost/scoped_ptr.hpp>
+#include <vector>
 
 #include "Thread.h"
+
+using std::vector;
 
 namespace liunian{
 class Channel;
@@ -33,6 +37,7 @@ class EventLoop : boost::noncopyable{
 		EventLoop();
 		~EventLoop();
 		void loop();
+		void quit();
 		bool isInLoopThread();
 		void updateChannel(Channel *channel);
 		void assertInLoopThread(){
@@ -41,9 +46,12 @@ class EventLoop : boost::noncopyable{
 			}
 		}
 	private:
+		typedef vector<Channel *> ChannelList;
+		ChannelList activeChannels;
 		bool loopFlag;
 		const pid_t threadId;
-	//	Epoll epoll;
+		boost::scoped_ptr<Epoll> epoll;
+//		Epoll *epoll;
 		void abortNotInLoopThread();
 };
 }
