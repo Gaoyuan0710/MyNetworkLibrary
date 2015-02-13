@@ -41,22 +41,14 @@ class Timestamp{
 		int64_t mircoSecondsSinceEpoch;
 };
 
-inline bool operator < (Timestamp lhs, Timestamp rhs){
-	return lhs.getMircoSecondsSinceEpoch() 
-		< rhs.getMircoSecondsSinceEpoch();
-}
-inline bool operator == (Timestamp lhs, Timestamp rhs){
-	return lhs.getMircoSecondsSinceEpoch() 
-		== rhs.getMircoSecondsSinceEpoch();
-}
+bool operator < (Timestamp lhs, Timestamp rhs);
+bool operator == (Timestamp lhs, Timestamp rhs);
 
-inline Timestamp addTime(Timestamp timestamp, double seconds){
-	int64_t delta = static_cast<int64_t> (
-				seconds * Timestamp::kMincroSecondsPerSecond);
-	return Timestamp(
-				timestamp.getMircoSecondsSinceEpoch() + delta);
-
+Timestamp addTime(Timestamp timestamp, double seconds);
 
 }
-}
+
+
+
+
 #endif

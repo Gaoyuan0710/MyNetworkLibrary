@@ -29,6 +29,8 @@
 #include "Mutex.h"
 #include "TimerId.h"
 #include "Timer.h"
+#include "TimerQueue.h"
+
 
 using std::vector;
 
@@ -45,6 +47,7 @@ class EventLoop : boost::noncopyable{
 		~EventLoop();
 		void loop();
 		void quit();
+		void wakeup();
 		bool isInLoopThread();
 		void updateChannel(Channel *channel);
 		void assertInLoopThread(){
@@ -58,11 +61,11 @@ class EventLoop : boost::noncopyable{
 		void runInLoop(const Functor &cb);
 		void queueInLoop(const Functor &cb);
 		TimerId runAt(const Timestamp &time,
-					const TimerCallBack &cb);
+					const Functor &cb);
 		TimerId runAfter(double delay,
-					const TimerCallBack &cb);
+					const Functor &cb);
 		TimerId runEvery(double interval,
-					const TimerCallBack &cb);
+					const Functor &cb);
 	private:
 
 		void handleRead();

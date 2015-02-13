@@ -15,15 +15,17 @@
 // =====================================================================================
 #include "TimerQueue.h"
 #include "EventLoop.h"
+#include "TimerId.h"
 
 #include <boost/bind.hpp>
+#include <sys/timerfd.h>
 
 using namespace liunian;
 using std::cout;
 using std::endl;
 
 int TimerQueue::creatTimerFd(){
-	int timerfd = timer_create(CLOCK_MONOTONIC,
+	int timerfd = timerfd_create(CLOCK_MONOTONIC,
 				TFD_NONBLOCK | TFD_CLOEXEC);
 
 	if (timerfd < 0){
@@ -35,17 +37,18 @@ int TimerQueue::creatTimerFd(){
 
 struct timespec TimerQueue::howMuchTimeFromNow(
 			Timestamp when){
-	int64_t microseconds = when.mircoSecondsSinceEpoch()
-		- Timestamp::now().mircoSecondsSinceEpoch();
+	int64_t microseconds = 
+		when.getMircoSecondsSinceEpoch()
+		- Timestamp::now().getMircoSecondsSinceEpoch();
 
 	if (microseconds < 100){
 		microseconds = 100;
 	}
 
 	struct timespec ts;
-	ts.tv_sec = static_cast<timer_t>(
-				microseconds / 
-		 		Timestamp::kMincroSecondsPerSecond);
+	
+	ts.tv_sec = static_cast<time_t>(microseconds/Timestamp::kMincroSecondsPerSecond);
+	
 	ts.tv_nsec = static_cast<long> (
 				(microseconds % 
 				 Timestamp::kMincroSecondsPerSecond) 
@@ -75,7 +78,7 @@ void TimerQueue::resetTimerFd(int timeFd,
 
 	newValue.it_value = howMuchTimeFromNow(expiration);
 
-	int ret = timer_settime(timeFd, 0,
+	int ret = timerfd_settime(timeFd, 0,
 				&newValue, &oldValue);
 
 	if (ret) {
@@ -90,7 +93,7 @@ TimerQueue::TimerQueue(EventLoop *loop)
 		timers()
 {
 	timeFdChannel.setReadCallBack(
-				boost::bind(&handlRead, this));
+				boost::bind(&TimerQueue::handlRead, this));
 
 	timeFdChannel.enableReading();
 }
@@ -104,7 +107,7 @@ TimerQueue::~TimerQueue(){
 	}
 }
 
-TimeId TimerQueue::addTimer(const TimerCallBack &cb,
+TimerId TimerQueue::addTimer(const TimerCallBack &cb,
 			Timestamp when,
 			double interval){
 	Timer *timer = new Timer(cb, when, interval);
@@ -112,7 +115,7 @@ TimeId TimerQueue::addTimer(const TimerCallBack &cb,
 	loop->runInLoop(
 			boost::bind(&TimerQueue::addTimerInLoop, 
 				this, timer));
-	return TimeId(timer);
+	return TimerId(timer);
 }
 
 void TimerQueue::addTimerInLoop(Timer *timer){
@@ -121,7 +124,7 @@ void TimerQueue::addTimerInLoop(Timer *timer){
 	bool earliestChanged = insert(timer);
 
 	if (earliestChanged){
-		resetTimerFd(timeFd, timer->expiration());
+		resetTimerFd(timeFd, timer->getExpiration());
 	}
 }
 void TimerQueue::handlRead(){
@@ -160,10 +163,11 @@ void TimerQueue::reset(const vector<Entry> &expired,
 			Timestamp now){
 	Timestamp nextExpired;
 
-	for (vector<Entry>::iterator it = expired.begin();
+
+	for (vector<Entry>::const_iterator it = expired.begin();
 				it != expired.end();
 				it++){
-		if (it->second->repeat()){
+		if (it->second->ifRepeat()){
 			it->second->restart(now);
 			insert(it->second);
 		}
@@ -172,7 +176,7 @@ void TimerQueue::reset(const vector<Entry> &expired,
 		}
 	}
 	if (!timers.empty()){
-		nextExpired = timers.begin()->second->expiration();
+		nextExpired = timers.begin()->second->getExpiration();
 
 	}
 	if (nextExpired.valid()){
@@ -180,9 +184,9 @@ void TimerQueue::reset(const vector<Entry> &expired,
 	}
 }
 
-bool TimeQueue::insert(Timer timer){
+bool TimerQueue::insert(Timer *timer){
 	bool earliestChanged = false;
-	Timestamp when = timer->expiration();
+	Timestamp when = timer->getExpiration();
 	TimerList::iterator it = timers.begin();
 	if (it == timers.end() || when < it->first){
 		earliestChanged = true;
@@ -190,5 +194,5 @@ bool TimeQueue::insert(Timer timer){
 
   std::pair<TimerList::iterator, bool> result =
           timers.insert(std::make_pair(when, timer));
-  return earliestChanged;}
+  return earliestChanged;
 }

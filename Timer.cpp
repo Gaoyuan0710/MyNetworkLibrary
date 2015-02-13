@@ -44,7 +44,7 @@ bool Timer::ifRepeat() const{
 
 void Timer::restart(Timestamp now){
 	if (repeat){
-		expiration = addTime(now, interval);
+		expiration = ::addTime(now, interval);
 	}
 	else{
 		std::cout << "ooooooooooo" << std::endl;

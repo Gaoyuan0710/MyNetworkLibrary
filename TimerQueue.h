@@ -26,6 +26,7 @@
 #include "Mutex.h"
 #include "Timer.h"
 #include "Channel.h"
+//#include "TimerId.h"
 
 using std::pair;
 using std::set;
@@ -34,13 +35,13 @@ using std::vector;
 namespace liunian{
 class EventLoop;
 class Timer;
-class TimeId;
+class TimerId;
 	
 class TimerQueue{
 	public:
-		TimerQueue();
+		TimerQueue(EventLoop *loop);
 		~TimerQueue();
-		TimeId addTimer(
+		TimerId addTimer(
 					const TimerCallBack &cb,
 					Timestamp when,
 					double interval);
@@ -48,6 +49,8 @@ class TimerQueue{
 	private:
 		typedef pair<Timestamp, Timer*> Entry;
 		typedef set<Entry> TimerList;
+		
+		
 		void addTimerInLoop(Timer *timer);
 		void handlRead();
 
@@ -65,8 +68,10 @@ class TimerQueue{
 		int creatTimerFd();
 		struct timespec howMuchTimeFromNow(
 					Timestamp when);
-		void readTimerFd();
-		void resetTimerFd();
+		void readTimerFd(int timerFd, 
+					Timestamp now);
+		void resetTimerFd(int timerFd,
+					Timestamp now);
 };
 }
 #endif
