@@ -84,6 +84,7 @@ void EventLoop::loop(){
 					it++){
 			(*it)->handleEvent();
 		}
+		doPendingFunctors();
 	}
 }
 //void EventLoop::quit(){
@@ -130,9 +131,13 @@ void EventLoop::queueInLoop(const Functor& cb)
 {
   {
     MutexLockGuard lock(mutex);
+	std::cout << pendingFunctors.size() << std::endl;
     pendingFunctors.push_back(cb);
+	
+	std::cout << pendingFunctors.size() << std::endl;
     }
 
+  cout << "flag " << !isInLoopThread() << "  " << callingPendingFunctors << endl;
   if (!isInLoopThread() || callingPendingFunctors)
   {
       wakeup();
@@ -161,8 +166,31 @@ void EventLoop::wakeup()
 	uint64_t one = 1;
   	ssize_t n = ::write(wakeUpFd, &one, sizeof one);
   	
+	std::cout << "Write " << n << std::endl;
+
 	if (n != sizeof one)
 	{
 		std::cout << "EventLoop::wakeup() writes " << n << " bytes instead of 8";
     }
 }
+
+
+
+void EventLoop::doPendingFunctors()
+{
+  std::vector<Functor> functors;
+  callingPendingFunctors = true;
+
+  {
+  MutexLockGuard lock(mutex);
+  functors.swap(pendingFunctors);
+  }
+
+  std::cout << "h " << functors.size() << std::endl;
+  for (size_t i = 0; i < functors.size(); ++i)
+  {
+    functors[i]();
+  }
+  callingPendingFunctors = false;
+}
+

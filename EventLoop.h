@@ -49,6 +49,8 @@ class EventLoop : boost::noncopyable{
 		void quit();
 		void wakeup();
 		bool isInLoopThread();
+		
+
 		void updateChannel(Channel *channel);
 		void assertInLoopThread(){
 			if (!isInLoopThread()){
