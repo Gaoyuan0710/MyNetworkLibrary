@@ -26,6 +26,8 @@
 
 using namespace liunian;
 
+
+
 Timestamp::Timestamp(int64_t mircoSeconds)
 		:mircoSecondsSinceEpoch(mircoSeconds)
 {
@@ -35,7 +37,7 @@ Timestamp::~Timestamp(){
 bool Timestamp::valid(){
 	return mircoSecondsSinceEpoch > 0;
 }
-int64_t Timestamp::mircoSecondsSinceEpoch(){
+int64_t Timestamp::getMircoSecondsSinceEpoch(){
 	return mircoSecondsSinceEpoch;
 } 
 string Timestamp::toString(){
@@ -66,10 +68,16 @@ double Timestamp::nowMicroSeconds(){
 }
 
 bool operator < (Timestamp lhs, Timestamp rhs){
-	return lhs.mircoSecondsSinceEpoch() 
-		< rhs.mircoSecondsSinceEpoch();
+	return lhs.getMircoSecondsSinceEpoch() 
+		< rhs.getMircoSecondsSinceEpoch();
 }
 bool operator == (Timestamp lhs, Timestamp rhs){
-	return lhs.mircoSecondsSinceEpoch() 
-		== rhs.mircoSecondsSinceEpoch();
+	return lhs.getMircoSecondsSinceEpoch() 
+		== rhs.getMircoSecondsSinceEpoch();
+}
+Timestamp addTime(Timestamp timestamp, double seconds){
+	int64_t delta = static_cast<int64_t> (
+				timestamp * Timestamp::kMincroSecondsPerSecond);
+	return timestamp(timestamp.getMircoSecondsSinceEpoch() + delta);
+
 }

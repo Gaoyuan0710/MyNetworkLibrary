@@ -1,11 +1,11 @@
 // =====================================================================================
 // 
-//       Filename:  testOneLoop.cpp
+//       Filename:  Timer.h
 //
 //    Description:  
 //
 //        Version:  1.0
-//        Created:  2015年02月11日 18时24分58秒
+//        Created:  2015年02月12日 19时39分44秒
 //       Revision:  none
 //       Compiler:  g++
 //
@@ -13,13 +13,22 @@
 //        Company:  Class 1204 of Computer Science and Technology
 // 
 // =====================================================================================
+#ifndef TIMERID_H
+#define TIMERID_H
 
-#include <iostream>
+namespace liunian{
+class Timer;
 
-int main(int argc, char *argv[])
-{
+class TimerId {
+	public:
+		explicit TimerId(Timer* timer)
+			: value(timer)
+		{
+		}
+	private:
+		Timer* value;
+};
 
-
-	return 0;
 }
 
+#endif  

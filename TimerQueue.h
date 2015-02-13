@@ -20,7 +20,7 @@
 #include <set>
 #include <vector>
 
-#include <boost/nonvopyable.hpp>
+#include <boost/noncopyable.hpp>
 
 #include "Timestamp.h"
 #include "Mutex.h"

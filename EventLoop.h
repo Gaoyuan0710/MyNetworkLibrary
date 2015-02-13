@@ -24,16 +24,23 @@
 #include <boost/scoped_ptr.hpp>
 #include <vector>
 
+#include "Timestamp.h"
 #include "Thread.h"
+#include "Mutex.h"
+#include "TimerId.h"
+#include "Timer.h"
 
 using std::vector;
 
 namespace liunian{
 class Channel;
 class Epoll;
+class TimerQueue;
+class Timestamp;
 
 class EventLoop : boost::noncopyable{
 	public:
+		typedef boost::function<void ()> Functor;
 		EventLoop();
 		~EventLoop();
 		void loop();
@@ -45,7 +52,22 @@ class EventLoop : boost::noncopyable{
 				abortNotInLoopThread();
 			}
 		}
+		Timestamp poolReturnTime() const{
+			return pollReturnTime;
+		}
+		void runInLoop(const Functor &cb);
+		void queueInLoop(const Functor &cb);
+		TimerId runAt(const Timestamp &time,
+					const TimerCallBack &cb);
+		TimerId runAfter(double delay,
+					const TimerCallBack &cb);
+		TimerId runEvery(double interval,
+					const TimerCallBack &cb);
 	private:
+
+		void handleRead();
+		void doPendingFunctors();
+
 		typedef vector<Channel *> ChannelList;
 		ChannelList activeChannels;
 		bool loopFlag;
@@ -53,6 +75,13 @@ class EventLoop : boost::noncopyable{
 		boost::scoped_ptr<Epoll> epoll;
 //		Epoll *epoll;
 		void abortNotInLoopThread();
+		Timestamp pollReturnTime;
+		boost::scoped_ptr<TimerQueue> timerQueue;
+		int wakeUpFd;
+		boost::scoped_ptr<Channel> wakeupChannel;
+		MutexLock mutex;
+		vector<Functor> pendingFunctors;
+		bool callingPendingFunctors;
 };
 }
 #endif

@@ -29,7 +29,7 @@ class Timestamp{
 		explicit Timestamp(int64_t miroSeconds = 0.0);
 		~Timestamp();
 		bool valid();
-		int64_t mircoSecondsSinceEpoch();
+		int64_t getMircoSecondsSinceEpoch();
 		string toString() const;
 
 		static Timestamp now();
@@ -41,10 +41,10 @@ class Timestamp{
 		int64_t mircoSecondsSinceEpoch;
 };
 
-inline bool operator < (Timestamp lhs, Timestamp rhs);
-inline bool operator == (Timestamp lhs, Timestamp rhs);
+bool operator < (Timestamp lhs, Timestamp rhs);
+bool operator == (Timestamp lhs, Timestamp rhs);
 
-inline bool Timestamp addTime(Timestamp timestamp, double seconds);
+Timestamp addTime(Timestamp timestamp, double seconds);
 
 }
 

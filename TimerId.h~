@@ -31,9 +31,9 @@ class Timer{
 		Timer(const TimerCallBack &cb,
 					Timestamp when,
 					double interval);
-		void run() const;
-		Timestamp getExpiration() const;
-		bool ifRepeat() const;
+		void run();
+		Timestamp expiration() const;
+		bool repeat() const;
 		void restart(Timestamp now);
 	private:
 		const TimerCallBack callBack;

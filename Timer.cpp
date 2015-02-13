@@ -34,11 +34,11 @@ void Timer::run() const{
 	callBack();
 }
 
-Timestamp Timer::expiration(){
+Timestamp Timer::getExpiration() const{
 	return expiration;
 }
 
-bool Timer::repeat(){
+bool Timer::ifRepeat() const{
 	return repeat;
 }
 
@@ -47,6 +47,7 @@ void Timer::restart(Timestamp now){
 		expiration = addTime(now, interval);
 	}
 	else{
-		expiration = Timestamp::Timestamp();
+		std::cout << "ooooooooooo" << std::endl;
+//		expiration = Timestamp();
 	}
 }

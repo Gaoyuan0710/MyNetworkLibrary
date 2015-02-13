@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <assert.h>
+#include <sys/eventfd.h>
 
 #include "EventLoop.h"
 #include "Channel.h"
@@ -30,10 +31,26 @@ using std::endl;
 
 __thread EventLoop* t_loopInThisThread = 0;
 
+
+static int createEventfd()
+{
+  int evtfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+  if (evtfd < 0)
+  {
+      cout << "Failed in eventfd" << endl;
+      abort();
+    }
+  return evtfd;
+}
+
 EventLoop::EventLoop()
 		:loopFlag(false),
 		epoll(new Epoll(this)),
-		threadId(CurrentThread::tid())
+		threadId(CurrentThread::tid()),
+		callingPendingFunctors(false),
+		timerQueue(new TimerQueue(this)),
+		wakeUpFd(createEventfd()),
+		wakeupChannel(new Channel(this, wakeUpFd))
 {
 	cout << "EventLoop Create " << this << "in thread"
 		<< threadId << endl;
@@ -69,9 +86,9 @@ void EventLoop::loop(){
 		}
 	}
 }
-void EventLoop::quit(){
-	loopFlag = false;
-}
+//void EventLoop::quit(){
+//	loopFlag = false;
+//}
 void EventLoop::updateChannel(Channel *channel){
 	epoll->updateChannel(channel);
 }
@@ -83,4 +100,58 @@ void EventLoop::abortNotInLoopThread(){
 	cout << "EventLoop::abortNotInLoopThread - EventLoop " << this << " was created in threadId = "
 		<< threadId << "  current thread id  = "
 		<< CurrentThread::tid();
+}
+
+
+
+void EventLoop::quit()
+{
+  loopFlag = false;
+
+  if (!isInLoopThread())
+  {
+      wakeup();
+    }
+}
+
+void EventLoop::runInLoop(const Functor& cb)
+{
+  if (isInLoopThread())
+  {
+      cb();
+    }
+  else
+  {
+      queueInLoop(cb);
+    }
+}
+
+void EventLoop::queueInLoop(const Functor& cb)
+{
+  {
+    MutexLockGuard lock(mutex);
+    pendingFunctors.push_back(cb);
+    }
+
+  if (!isInLoopThread() || callingPendingFunctors)
+  {
+      wakeup();
+    }
+}
+
+TimerId EventLoop::runAt(const Timestamp& time, const TimerCallback& cb)
+{
+  return timerQueue_->addTimer(cb, time, 0.0);
+}
+
+TimerId EventLoop::runAfter(double delay, const TimerCallback& cb)
+{
+  Timestamp time(addTime(Timestamp::now(), delay));
+  return runAt(time, cb);
+}
+
+TimerId EventLoop::runEvery(double interval, const TimerCallback& cb)
+{
+  Timestamp time(addTime(Timestamp::now(), interval));
+  return timerQueue_->addTimer(cb, time, interval);
 }
