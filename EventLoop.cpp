@@ -17,6 +17,7 @@
 #include <iostream>
 #include <assert.h>
 #include <sys/eventfd.h>
+#include <boost/bind.hpp>
 
 #include "EventLoop.h"
 #include "Channel.h"
@@ -49,12 +50,14 @@ EventLoop::EventLoop()
 		threadId(CurrentThread::tid()),
 		callingPendingFunctors(false),
 		timerQueue(new TimerQueue(this)),
+		
 		wakeUpFd(createEventfd()),
 		wakeupChannel(new Channel(this, wakeUpFd))
 {
-	cout << "EventLoop Create " << this << "in thread"
-		<< threadId << endl;
+//	cout << "EventLoop Create " << this << "in thread"
+//		<< threadId << endl;
 
+	cout << "WakeUpFd = " << wakeUpFd << "Channel size = " << (wakeupChannel == NULL) << endl;
 	if (t_loopInThisThread){
 		cout << "Another EventLoop " 
 			<< t_loopInThisThread 
@@ -64,6 +67,9 @@ EventLoop::EventLoop()
 	else{
 		t_loopInThisThread = this;
 	}
+
+	wakeupChannel->setReadCallBack(boost::bind(&EventLoop::handleRead, this));
+	wakeupChannel->enableReading();
 	
 }
 EventLoop::~EventLoop(){
@@ -78,10 +84,16 @@ void EventLoop::loop(){
 	while (loopFlag){
 		activeChannels.clear();
 		epoll->poll(&activeChannels);
+
+		int i = 0;
+
+		std::cout << "HHHHHHH" << std::endl;
+
 		for (ChannelList::iterator it =
 					activeChannels.begin();
 					it != activeChannels.end();
 					it++){
+			std::cout << "Num:" << i++ << endl;
 			(*it)->handleEvent();
 		}
 		doPendingFunctors();
@@ -119,10 +131,12 @@ void EventLoop::runInLoop(const Functor& cb)
 {
   if (isInLoopThread())
   {
+	  std::cout << "isInLoopThread" << std::endl;
       cb();
     }
   else
   {
+	  std::cout << "isNotInLoopThread" << std::endl;
       queueInLoop(cb);
     }
 }
@@ -131,10 +145,10 @@ void EventLoop::queueInLoop(const Functor& cb)
 {
   {
     MutexLockGuard lock(mutex);
-	std::cout << pendingFunctors.size() << std::endl;
+//	std::cout << pendingFunctors.size() << std::endl;
     pendingFunctors.push_back(cb);
 	
-	std::cout << pendingFunctors.size() << std::endl;
+//	std::cout << pendingFunctors.size() << std::endl;
     }
 
   cout << "flag " << !isInLoopThread() << "  " << callingPendingFunctors << endl;
@@ -166,7 +180,7 @@ void EventLoop::wakeup()
 	uint64_t one = 1;
   	ssize_t n = ::write(wakeUpFd, &one, sizeof one);
   	
-	std::cout << "Write " << n << std::endl;
+	std::cout << "Write " << n << " sizeof one " << sizeof one << std::endl;
 
 	if (n != sizeof one)
 	{
@@ -193,4 +207,12 @@ void EventLoop::doPendingFunctors()
   }
   callingPendingFunctors = false;
 }
-
+void EventLoop::handleRead()
+{
+  uint64_t one = 1;
+  ssize_t n = ::read(wakeUpFd, &one, sizeof one);
+  if (n != sizeof one)
+  {
+	  std::cout << "EventLoop::handleRead() reads " << n << " bytes instead of 8";
+    }
+}

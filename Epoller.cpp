@@ -40,6 +40,8 @@ Epoll::Epoll(EventLoop *loop)
 Epoll::~Epoll(){
 }
 void Epoll::poll(vector <Channel *> *channel){
+
+	std::cout << "Epoll::poll begin " << endl;
 	int fds = epoll_wait(epollFd, 
 				&*events.begin(), 
 				static_cast<int>(events.size()), 
@@ -51,6 +53,9 @@ void Epoll::poll(vector <Channel *> *channel){
 			<<  endl;
 		return ;
 	}
+
+	std::cout << "Epoll::poll end" << endl;
+
 	fillActiveChannels(fds, channel);
 }
 void Epoll::fillActiveChannels(int numEvents,

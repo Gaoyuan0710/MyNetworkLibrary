@@ -60,8 +60,8 @@ void TimerQueue::readTimerFd(int timerFd, Timestamp now){
 	uint64_t howmany;
 	ssize_t n = read(timerFd, &howmany, sizeof(howmany));
 
-	cout << "TimerQueue::handleRead() " << howmany
-		<< " at " << now.toString() << endl; 
+//	cout << "TimerQueue::handleRead() " << howmany
+//		<< " at " << now.toString() << endl; 
 	if (n != sizeof(howmany)){
 		cout << "TimerQueue::handleRead() reads " 
 			<< n << " bytes instead of 8" << endl;
