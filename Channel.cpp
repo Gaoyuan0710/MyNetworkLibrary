@@ -32,7 +32,7 @@ Channel::Channel(EventLoop *loop, int socketfd)
 		writeCallBack(NULL),
 		errorCallBack(NULL)
 {
-	
+	std::cout << "In Channel socketFd = " << socketfd << std::endl;	
 }
 void Channel::setRevents(int revents){
 	this->revents = revents;

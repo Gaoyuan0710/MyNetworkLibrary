@@ -42,6 +42,7 @@ Epoll::~Epoll(){
 void Epoll::poll(vector <Channel *> *channel){
 
 	std::cout << "Epoll::poll begin " << endl;
+	std::cout << "event size " << events.size() << std::endl;
 	int fds = epoll_wait(epollFd, 
 				&*events.begin(), 
 				static_cast<int>(events.size()), 

@@ -83,6 +83,7 @@ void EventLoop::loop(){
 
 	while (loopFlag){
 		activeChannels.clear();
+		std::cout << "enter loop" << std::endl;
 		epoll->poll(&activeChannels);
 
 		int i = 0;

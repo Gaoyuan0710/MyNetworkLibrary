@@ -15,7 +15,7 @@
 // =====================================================================================
 
 #ifndef THREADPOOL_H
-#define THREADPOLL_H
+#define THREADPOOL_H
 
 #include <string>
 #include <queue>

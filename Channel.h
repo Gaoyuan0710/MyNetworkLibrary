@@ -30,6 +30,7 @@ class Channel : boost::noncopyable{
 	public:
 		typedef boost::function<void ()> EventCallBack;
 		Channel(EventLoop *loop, int sockfd);
+		~Channel();
 		void handleEvent();
 		void setReadCallBack(const EventCallBack &func){
 			readCallBack = func;

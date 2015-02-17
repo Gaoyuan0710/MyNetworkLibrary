@@ -27,6 +27,9 @@ class Socket{
 		{
 			socketFd = creatSocket();
 		}
+		Socket(int fd){
+			socketFd = fd;
+		}
 		~Socket();
 		int getSocketFd() const{
 			std::cout << "get socket fd = " << socketFd << std::endl;
