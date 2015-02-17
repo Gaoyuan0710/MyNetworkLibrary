@@ -18,17 +18,37 @@
 #define ACCEPTOR_H
 
 
+#include <boost/function.hpp>
+
+#include "InetAddress.h"
+#include "Socket.h"
+#include "Channel.h"
+
 namespace liunian{
 class EventLoop;
 class Channel;
-
 class Acceptor{
 	public:
-		Acceptor(EventLoop *loop);
+		typedef boost::function<void (int sockfd, const InetAddress &)> DeadlNewConnectionCallBack;
+		Acceptor(EventLoop *loop, const InetAddress &);
+
+		void setDealNewConnectionCallBack(const DeadlNewConnectionCallBack &cb){
+			newConnectionCallBack = cb;
+		}
+		bool ifListenning()const{
+			return listenFlag;
+		}
+		void listen();
 	private:
+		void handleRead();
 		EventLoop *loop;
-		Channel *acceptChannel;
-		int listenFd;
+		Socket acceptSocket;
+		Channel acceptChannel;
+		DeadlNewConnectionCallBack newConnectionCallBack;
+		bool listenFlag;
+
 
 };
 }
+
+#endif
