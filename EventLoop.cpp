@@ -106,6 +106,9 @@ void EventLoop::loop(){
 void EventLoop::updateChannel(Channel *channel){
 	epoll->updateChannel(channel);
 }
+void EventLoop::removeChannel(Channel *channel){
+	epoll->removeChannel(channel);
+}
 bool EventLoop::isInLoopThread(){
 	return threadId == CurrentThread::tid();
 } 

@@ -28,5 +28,6 @@ typedef boost::shared_ptr<TcpConnection> TcpConnectionPtr;
 typedef map<string, TcpConnectionPtr> ConnectionMap;
 typedef boost::function<void (const TcpConnectionPtr&)> ConnectionCallBack;
 typedef boost::function<void (const TcpConnectionPtr&, const char *message, ssize_t len)> MessageCallBack;
+typedef boost::function<void (const TcpConnectionPtr&)> CloseCallBack;
 }
 #endif

@@ -41,10 +41,14 @@ class Channel : boost::noncopyable{
 		void setErrorCallBack(const EventCallBack &func){
 			errorCallBack = func;
 		}
+		void setCloseCallBack(const EventCallBack &func){
+			closeCallBack = func;
+		}
 		void setRevents(int revent);
 		void setIndex(int index);
 		void enableReading();
 		void enableWriting();
+		void disableAll();
 		int getEvents();
 		int getSocket();
 		int getIndex();
@@ -58,10 +62,12 @@ class Channel : boost::noncopyable{
 		int socketfd;
 		int events;
 		int revents;
+		bool isInHandling;
 		EventLoop *loop;
 		EventCallBack writeCallBack;
 		EventCallBack readCallBack;
 		EventCallBack errorCallBack;
+		EventCallBack closeCallBack;
 };
 }
 #endif

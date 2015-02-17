@@ -51,6 +51,7 @@ class TcpServer{
 		EventLoop *loop;
 		string name;
 		void newConnection(int fd, const InetAddress &addr);
+		void removeConnection(const TcpConnectionPtr&);
 		boost::scoped_ptr<Acceptor> acceptor;
 		
 		ConnectionCallBack connectionCallBack;

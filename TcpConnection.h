@@ -63,17 +63,24 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 		void setMessageCallBack(const MessageCallBack &cb){
 			messageCallBack = cb;
 		}
+		void setCloseCallBack(const CloseCallBack& cb){
+			closeCallBack = cb;
+		}
 		void connectionEstablished();
-
+		void connectionDestroyed();
 	private:
 		enum State{
 			kConnecting,
 			kEstablish,
+			kDisConnected,
 		};
 		void setState(State s){
 			state = s;	
 		}
 		void handleRead();
+		void handleWrite();
+		void handleClose();
+		void handleError();
 		EventLoop *loop;
 		string name;
 		State state;
@@ -85,6 +92,8 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 		InetAddress otherAddr;
 		ConnectionCallBack connectionCallBack;
 		MessageCallBack messageCallBack;
+		CloseCallBack closeCallBack;
+
 };
 }
 #endif

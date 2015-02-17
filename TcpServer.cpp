@@ -34,6 +34,7 @@ TcpServer::TcpServer(EventLoop *loop, const InetAddress &addr):
 					boost::bind(&TcpServer::newConnection, this, _1, _2));
 	}
 TcpServer::~TcpServer(){
+
 }
 void TcpServer::start(){
 	startFlag = true;
@@ -66,8 +67,15 @@ void TcpServer::newConnection(int socketFd, const InetAddress &addr){
 	//newConnect.setConnectionCallBack(connectionCallBack);
 	newConnect->setMessageCallBack(messageCallBack);
 
+	newConnect->setCloseCallBack(
+				boost::bind(&TcpServer::removeConnection, this, _1));
 	newConnect->connectionEstablished();
+}
+void TcpServer::removeConnection(const TcpConnectionPtr & connect){
+	size_t n = connections.erase(connect->getname());
 
+	loop->queueInLoop(
+				boost::bind(&TcpConnection::connectionDestroyed, connect));
 
 }
 

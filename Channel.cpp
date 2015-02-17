@@ -30,14 +30,25 @@ Channel::Channel(EventLoop *loop, int socketfd)
 		index(-1),
 		readCallBack(NULL),
 		writeCallBack(NULL),
-		errorCallBack(NULL)
+		errorCallBack(NULL),
+		closeCallBack(NULL),
+		isInHandling(false)
 {
 	std::cout << "In Channel socketFd = " << socketfd << std::endl;	
+}
+Channel::~Channel(){
+	assert(!isInHandling);
 }
 void Channel::setRevents(int revents){
 	this->revents = revents;
 }
 void Channel::handleEvent(){
+	isInHandling = true;
+	if ((revents & EPOLLHUP) && !(revents & EPOLLIN)){
+		if (closeCallBack){
+			closeCallBack();
+		}
+	}
 	if (revents & EPOLLIN){
 		if (readCallBack){
 			readCallBack();
@@ -48,6 +59,7 @@ void Channel::handleEvent(){
 			writeCallBack();
 		}	
 	}
+	isInHandling = false;
 }
 void Channel::enableReading(){
 	events |= EPOLLIN;
@@ -59,6 +71,10 @@ void Channel::enableWriting(){
 }
 void Channel::update(){
 	loop->updateChannel(this);
+}
+void Channel::disableAll(){
+	events |= 0;
+	update();
 }
 void Channel::setIndex(int index){
 	this->index = index;
