@@ -23,6 +23,7 @@
 #include "Channel.h"
 #include "Epoller.h"
 #include "CurrentThread.h"
+#include "Timestamp.h"
 
 using namespace liunian;
 using namespace CurrentThread;
@@ -50,8 +51,8 @@ EventLoop::EventLoop()
 		threadId(CurrentThread::tid()),
 		callingPendingFunctors(false),
 		timerQueue(new TimerQueue(this)),
-		
 		wakeUpFd(createEventfd()),
+	//	pollReturnTime(0),
 		wakeupChannel(new Channel(this, wakeUpFd))
 {
 //	cout << "EventLoop Create " << this << "in thread"
@@ -83,19 +84,18 @@ void EventLoop::loop(){
 
 	while (loopFlag){
 		activeChannels.clear();
-		std::cout << "enter loop" << std::endl;
-		epoll->poll(&activeChannels);
+		int timeOut = -1;
 
-		int i = 0;
+		pollReturnTime = epoll->poll(timeOut, &activeChannels);
 
-		std::cout << "HHHHHHH" << std::endl;
 
+
+		std::cout << "EventLoop loop activeChannels size " << activeChannels.size() << std::endl;
 		for (ChannelList::iterator it =
 					activeChannels.begin();
 					it != activeChannels.end();
 					it++){
-			std::cout << "Num:" << i++ << endl;
-			(*it)->handleEvent();
+			(*it)->handleEvent(pollReturnTime);
 		}
 		doPendingFunctors();
 	}

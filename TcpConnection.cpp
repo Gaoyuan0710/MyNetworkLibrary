@@ -21,6 +21,7 @@
 #include "Socket.h"
 #include "Channel.h"
 #include "EventLoop.h"
+#include "Timestamp.h"
 
 using namespace liunian;
 
@@ -38,7 +39,7 @@ TcpConnection::TcpConnection(
 		localAddr(localAddr),
 		otherAddr(otherAddr){
 			channel->setReadCallBack(
-						boost::bind(&TcpConnection::handleRead, this));
+						boost::bind(&TcpConnection::handleRead, this, _1));
 			channel->setWriteCallBack(
 						boost::bind(&TcpConnection::handleWrite, this));
 			channel->setCloseCallBack(
@@ -55,31 +56,37 @@ void TcpConnection::connectionEstablished(){
 	connectionCallBack(shared_from_this());
 }
 void TcpConnection::connectionDestroyed(){
-	std::cout << "state " << std::endl;
-	std::cout << state << std::endl;
+	
+	std::cout << "TcpConnection ConnectionDestroyed" << std::endl;
 	assert(state == kEstablish);
 	setState(kDisConnected);
 	channel->disableAll();
+	//sleep(100);
 //	closeCallBack(shared_from_this());
 
 	connectionCallBack(shared_from_this());
 	loop->removeChannel(get_pointer(channel));
 
 }
-void TcpConnection::handleRead(){
+void TcpConnection::handleRead(Timestamp recvTime){
 	char buf[65535];
+	int saveError = 0;
 
-	ssize_t n = ::read(channel->getSocket(), buf, sizeof(buf));
+	ssize_t n = inputBuffer.readFd(channel->getSocket(), &saveError);
 
+	std::cout << "n = " << n << std::endl;
+	//sleep(10);
 	if (n > 0){
-		messageCallBack(shared_from_this(), buf, n);
+		messageCallBack(shared_from_this(), &inputBuffer, recvTime);
 	}
 	else if (n == 0){
 		std::cout << "should be closed" << std::endl;
 		std::cout << " " << state << std::endl;
+	//	sleep(100);
 		handleClose();
 	}
 	else {
+		errno = saveError;
 		handleError();
 	}
 }

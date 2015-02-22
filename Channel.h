@@ -23,16 +23,20 @@
 
 //#include "EventLoop.h"
 
+#include "Timestamp.h"
+
 namespace liunian{
 class EventLoop;
 
 class Channel : boost::noncopyable{
 	public:
 		typedef boost::function<void ()> EventCallBack;
+		typedef boost::function<void (Timestamp)> ReadEventCallBack;
+
 		Channel(EventLoop *loop, int sockfd);
 		~Channel();
-		void handleEvent();
-		void setReadCallBack(const EventCallBack &func){
+		void handleEvent(Timestamp receiveTime);
+		void setReadCallBack(const ReadEventCallBack &func){
 			readCallBack = func;
 		}
 		void setWriteCallBack(const EventCallBack &func){
@@ -65,7 +69,7 @@ class Channel : boost::noncopyable{
 		bool isInHandling;
 		EventLoop *loop;
 		EventCallBack writeCallBack;
-		EventCallBack readCallBack;
+		ReadEventCallBack readCallBack;
 		EventCallBack errorCallBack;
 		EventCallBack closeCallBack;
 };

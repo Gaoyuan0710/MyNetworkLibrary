@@ -57,9 +57,7 @@ class EventLoop : boost::noncopyable{
 			if (!isInLoopThread()){
 				abortNotInLoopThread();
 			}
-		}
-		Timestamp poolReturnTime() const{
-			return pollReturnTime;
+		
 		}
 		void runInLoop(const Functor &cb);
 		void queueInLoop(const Functor &cb);
@@ -69,6 +67,9 @@ class EventLoop : boost::noncopyable{
 					const Functor &cb);
 		TimerId runEvery(double interval,
 					const Functor &cb);
+		Timestamp getPollRetrunTime(){
+			return pollReturnTime;
+		}
 	private:
 
 		void handleRead();
@@ -81,7 +82,9 @@ class EventLoop : boost::noncopyable{
 		boost::scoped_ptr<Epoll> epoll;
 //		Epoll *epoll;
 		void abortNotInLoopThread();
+		
 		Timestamp pollReturnTime;
+		
 		boost::scoped_ptr<TimerQueue> timerQueue;
 		int wakeUpFd;
 		boost::scoped_ptr<Channel> wakeupChannel;

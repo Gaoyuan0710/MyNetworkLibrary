@@ -20,6 +20,7 @@
 #include <errno.h>
 
 #include "Epoller.h"
+#include "Timestamp.h"
 
 using namespace liunian;
 using std::vector;
@@ -39,31 +40,38 @@ Epoll::Epoll(EventLoop *loop)
 }
 Epoll::~Epoll(){
 }
-void Epoll::poll(vector <Channel *> *channel){
+Timestamp Epoll::poll(int timeOut,
+			vector <Channel *> *channel){
 
 	std::cout << "Epoll::poll begin " << endl;
 	std::cout << "event size " << events.size() << std::endl;
 	int fds = epoll_wait(epollFd, 
 				&*events.begin(), 
 				static_cast<int>(events.size()), 
-				-1);
+				timeOut);
 
+	Timestamp now(Timestamp::now());
 	if (fds == -1){
 		cout << "epoll_wait error" << errno
 			<< " " << strerror(errno) 
 			<<  endl;
-		return ;
+//		return ;
 	}
-
+	if (fds > 0){
+		fillActiveChannels(fds, channel);
+	}
+		
 	std::cout << "Epoll::poll end" << endl;
 
-	fillActiveChannels(fds, channel);
+
+	return now;
 }
 void Epoll::fillActiveChannels(int numEvents,
 			ChannelList *activeChannels) const{
 
 
 
+	std::cout << "fillActiveChannels " << numEvents << std::endl;
 	for (int i = 0; i < numEvents; i++){
 		Channel *channelTemp = static_cast<Channel *>
 			(events[i].data.ptr);

@@ -25,8 +25,9 @@ using std::string;
 namespace liunian{
 class Timestamp{
 	public:
-	//	Timestamp();
-		explicit Timestamp(int64_t miroSeconds = 0.0);
+		Timestamp():
+			mircoSecondsSinceEpoch(0){}
+		explicit Timestamp(int64_t miroSeconds);
 		~Timestamp();
 		bool valid();
 		int64_t getMircoSecondsSinceEpoch();
@@ -49,7 +50,6 @@ inline bool operator == (Timestamp lhs, Timestamp rhs){
 	return lhs.getMircoSecondsSinceEpoch() 
 		== rhs.getMircoSecondsSinceEpoch();
 }
-
 inline Timestamp addTime(Timestamp timestamp, double seconds){
 	int64_t delta = static_cast<int64_t> (
 				seconds * Timestamp::kMincroSecondsPerSecond);

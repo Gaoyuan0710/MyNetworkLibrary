@@ -24,6 +24,7 @@
 
 #include "EventLoop.h"
 #include "Channel.h"
+#include "Timestamp.h"
 
 using std::vector;
 using std::map;
@@ -37,7 +38,8 @@ class Epoll{
 		
 		Epoll(EventLoop *loop);
 		~Epoll();
-		void poll(ChannelList *channelList);
+		Timestamp poll(int timeOut, 
+					ChannelList *channelList);
 
 
 		void updateChannel(Channel *channel);

@@ -20,6 +20,8 @@
 #include "InetAddress.h"
 #include "TcpServer.h"
 #include "CallBack.h"
+#include "Timestamp.h"
+#include "Buffer.h"
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
@@ -77,7 +79,7 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 		void setState(State s){
 			state = s;	
 		}
-		void handleRead();
+		void handleRead(Timestamp recvTime);
 		void handleWrite();
 		void handleClose();
 		void handleError();
@@ -93,6 +95,7 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 		ConnectionCallBack connectionCallBack;
 		MessageCallBack messageCallBack;
 		CloseCallBack closeCallBack;
+		Buffer inputBuffer;
 
 };
 }

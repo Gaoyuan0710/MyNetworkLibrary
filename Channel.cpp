@@ -42,7 +42,7 @@ Channel::~Channel(){
 void Channel::setRevents(int revents){
 	this->revents = revents;
 }
-void Channel::handleEvent(){
+void Channel::handleEvent(Timestamp receiveTime){
 	isInHandling = true;
 	if ((revents & EPOLLHUP) && !(revents & EPOLLIN)){
 		if (closeCallBack){
@@ -51,7 +51,7 @@ void Channel::handleEvent(){
 	}
 	if (revents & EPOLLIN){
 		if (readCallBack){
-			readCallBack();
+			readCallBack(receiveTime);
 		}
 	}
 	if (revents & EPOLLOUT){

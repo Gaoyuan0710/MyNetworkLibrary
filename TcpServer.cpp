@@ -74,6 +74,8 @@ void TcpServer::newConnection(int socketFd, const InetAddress &addr){
 void TcpServer::removeConnection(const TcpConnectionPtr & connect){
 	size_t n = connections.erase(connect->getname());
 
+	std::cout << "remove Connection" << std::endl;
+	//sleep(100);
 	loop->queueInLoop(
 				boost::bind(&TcpConnection::connectionDestroyed, connect));
 
