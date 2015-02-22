@@ -19,8 +19,12 @@
 
 #include <vector>
 #include <sys/uio.h>
-#include <error.h>
+#include <errno.h>
+#include <string>
+#include <boost/implicit_cast.hpp>
 
+using std::string;
+using boost::implicit_cast;
 using std::vector;
 
 namespace liunian{
@@ -53,29 +57,29 @@ class Buffer{
 		const char * readStartIndex() const{
 			return begin() + readIndex;
 		}
-		const char *findCRLF() const{
-			const char * crlf = std::search(readStartIndex(), writeStartIndex(), kCRLF, kCRLF + 2);
-			return crlf == writeIndex() ? NULL:crlf;
-		}
-		const char *findCRLF(const char *start) const{
-			const char * crlf = std::search(start, writeStartIndex(), kCRLF, kCRLF + 2);
-			return crlf == writeIndex() ? NULL:crlf;
-		}
-		const char* findEOL() const{
-			const void* eol = memchr(readStartIndex(), '\n', readableBytes());
-			return static_cast<const char*>(eol);
-		}
-		const char* findEOL(const char* start) const{
-			const void* eol = memchr(start, '\n', beginWrite() - start);
-			return static_cast<const char*>(eol);
-		}
+//		const char *findCRLF() const{
+//			const char * crlf = std::search(readStartIndex(), writeStartIndex(), kCRLF, kCRLF + 2);
+//			return crlf == writeIndex() ? NULL:crlf;
+//		}
+//		const char *findCRLF(const char *start) const{
+//			const char * crlf = std::search(start, writeStartIndex(), kCRLF, kCRLF + 2);
+//			return crlf == writeIndex() ? NULL:crlf;
+//		}
+//		const char* findEOL() const{
+//			const void* eol = memchr(readStartIndex(), '\n', readableSize());
+//			return static_cast<const char*>(eol);
+//		}
+//		const char* findEOL(const char* start) const{
+//			const void* eol = memchr(start, '\n', writeSartIndex() - start);
+//			return static_cast<const char*>(eol);
+//		}
 
 		void retrieve(size_t len){
 			if (len < readableSize()){
 				readIndex += len;
 			}
 			else{
-				retrievaAll();
+				retrieveAll();
 			}
 		}
 		void retrieveUntil(const char *flag){
@@ -90,10 +94,11 @@ class Buffer{
 		}
 		string retrieveAllAsString(size_t len){
 			string result(readStartIndex(), len);
+			retrieve(len);
 			return result;
 		}
 		void append(const string &str){
-			append()
+			append(str.c_str(), str.length());
 		}
 		void append(const char * data_, size_t len){
 			ensureWriteable(len);
@@ -101,7 +106,7 @@ class Buffer{
 			writeIndex += len;
 		}
 		void append(const void * data_, size_t len){
-			append(static_cast<const char *>data_, len);
+			append(static_cast<const char *>(data_), len);
 		}
 		void ensureWriteable(int len){
 			if (writeableSize() < len){
@@ -120,8 +125,11 @@ class Buffer{
 			vec[1].iov_base = extraBuf;
 			vec[1].iov_len = sizeof(extraBuf);
 
-			const int iovcnt = (writeableSize < sizeof(extraBuf) ? 2 : 1);
-			const ssize_t n = readv(fd, vec, iovcnt);
+		//	const int iovcnt = (writeableSize < sizeof(extraBuf)) ? 2 : 1;
+
+
+			const ssize_t n = readv(fd, vec, 2);
+		//	const ssize_t n = readv(fd, vec, iovcnt);
 
 			if (n < 0){
 				*savedError = errno;
@@ -131,17 +139,21 @@ class Buffer{
 			}
 			else{
 				writeIndex = buffer.size();
-				append(extraBuf, n - writeableSize_)
+				append(extraBuf, n - writeableSize_);
 			}
+			return n;
 		}
 
 	private:
 		vector<char> buffer;
 		size_t readIndex;
 		size_t writeIndex;
-		static const char kCRLF[] = "\r\n";
+		static const char kCRLF[];
 
 		char *begin(){
+			return &*buffer.begin();
+		}
+		const char *begin() const{
 			return &*buffer.begin();
 		}
 		void makeSpace(size_t len){
