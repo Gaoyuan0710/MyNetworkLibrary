@@ -52,7 +52,9 @@ class Channel : boost::noncopyable{
 		void setIndex(int index);
 		void enableReading();
 		void enableWriting();
+		void disableWriting();
 		void disableAll();
+		bool isWriting();
 		int getEvents();
 		int getSocket();
 		int getIndex();

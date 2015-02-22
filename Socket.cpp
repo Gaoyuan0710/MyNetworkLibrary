@@ -75,4 +75,8 @@ int Socket::creatSocket(){
 	cout << "socketFd = " << ret << endl;
 	return ret;
 }
-
+void Socket::shutdownWrite(){
+	if (shutdown(socketFd, SHUT_WR) < 0){
+		cout << "shutdown write error" << endl;
+	}
+}

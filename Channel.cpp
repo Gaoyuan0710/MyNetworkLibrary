@@ -76,6 +76,10 @@ void Channel::disableAll(){
 	events |= 0;
 	update();
 }
+void Channel::disableWriting(){
+	events &= ~EPOLLOUT;
+	update();
+}
 void Channel::setIndex(int index){
 	this->index = index;
 }
@@ -87,4 +91,7 @@ int Channel::getEvents(){
 }
 int Channel::getSocket(){
 	return socketfd;
+}
+bool Channel::isWriting(){
+	return events & EPOLLOUT;
 }

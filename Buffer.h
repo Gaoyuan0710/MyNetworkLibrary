@@ -22,7 +22,8 @@
 #include <errno.h>
 #include <string>
 #include <boost/implicit_cast.hpp>
-
+#include <iostream>
+#include <unistd.h>
 using std::string;
 using boost::implicit_cast;
 using std::vector;
@@ -89,6 +90,12 @@ class Buffer{
 			readIndex = kPrependSize;
 			writeIndex = kPrependSize;
 		}
+		string retrieveAsString(){
+			string str(readStartIndex(), readableSize());
+			std::cout << "In Buffer " << str << std::endl;
+			retrieveAll();
+			return str;
+		}
 		string retrieveAllAsString(){
 			return retrieveAllAsString(readableSize());
 		}
@@ -121,13 +128,16 @@ class Buffer{
 			struct iovec vec[2];
 			const size_t writeableSize_ = writeableSize();
 			vec[0].iov_base = begin() + writeIndex;
-			vec[0].iov_len = writeIndex;
+			vec[0].iov_len = writeableSize_;
 			vec[1].iov_base = extraBuf;
 			vec[1].iov_len = sizeof(extraBuf);
 
 		//	const int iovcnt = (writeableSize < sizeof(extraBuf)) ? 2 : 1;
 
 
+			std::cout << "Before readv " << writeIndex << std::endl;
+
+//			const ssize_t n = read(fd, extraBuf, sizeof(extraBuf));
 			const ssize_t n = readv(fd, vec, 2);
 		//	const ssize_t n = readv(fd, vec, iovcnt);
 
@@ -136,11 +146,18 @@ class Buffer{
 			}
 			else if (implicit_cast<size_t>(n) <= writeableSize_){
 				writeIndex += n;
+
+				std::cout << "Test " << extraBuf << "  " << n << std::endl;
+			std::cout << "after readv " << writeIndex << std::endl;
+			for (int i = writeIndex - n; i < writeIndex; i++){
+				std::cout << buffer[i];
+			}
 			}
 			else{
 				writeIndex = buffer.size();
 				append(extraBuf, n - writeableSize_);
 			}
+			std::cout << std::endl;
 			return n;
 		}
 

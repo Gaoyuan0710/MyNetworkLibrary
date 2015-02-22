@@ -58,7 +58,7 @@ void TcpConnection::connectionEstablished(){
 void TcpConnection::connectionDestroyed(){
 	
 	std::cout << "TcpConnection ConnectionDestroyed" << std::endl;
-	assert(state == kEstablish);
+	assert(state == kEstablish || state == kDisConnectiong);
 	setState(kDisConnected);
 	channel->disableAll();
 	//sleep(100);
@@ -92,7 +92,20 @@ void TcpConnection::handleRead(Timestamp recvTime){
 }
 
 void TcpConnection::handleWrite(){
+	if (channel->isWriting()){
+		ssize_t writeLen = write(channel->getSocket(), outputBuffer.readStartIndex(), outputBuffer.readableSize());
 
+		if (writeLen > 0){
+			outputBuffer.retrieve(writeLen);
+			if (outputBuffer.readableSize() == 0){
+				channel->disableWriting();
+
+				if (state == kDisConnectiong){
+					shutdownInLoop();
+				}
+			}
+		}
+	}
 }
 
 void TcpConnection::handleClose(){
@@ -101,4 +114,49 @@ void TcpConnection::handleClose(){
 }
 void TcpConnection::handleError(){
 	std::cout << "Tcp handleError" << std::endl;
+}
+
+void TcpConnection::send(const std::string &message){
+	if (state == kEstablish){
+		if (loop->isInLoopThread()){
+			sendInLoop(message);
+		}
+		else{
+			loop->runInLoop(
+						boost::bind(&TcpConnection::sendInLoop, this, message));
+		}
+	}
+}
+void TcpConnection::sendInLoop(const std::string &message){
+	ssize_t writeLen = 0;
+
+	if (!channel->isWriting() && outputBuffer.readableSize() == 0){
+		std::cout << "send return " << message << std::endl;
+
+
+		writeLen = write(channel->getSocket(), message.data(), message.size());
+		if (writeLen >= 0){
+			if (implicit_cast<size_t>(writeLen) < message.size()){
+				outputBuffer.append(message.data() + writeLen, message.size() - writeLen);
+				if (!channel->isWriting()){
+					channel->enableWriting();
+				}
+			}
+			else{
+				writeLen = 0;
+			}
+		}
+	}
+}
+void TcpConnection::shutdown(){
+	if (state == kEstablish){
+		setState(kDisConnectiong);
+		loop->runInLoop(
+					boost::bind(&TcpConnection::shutdownInLoop, this));
+	}
+}
+void TcpConnection::shutdownInLoop(){
+	if (!channel->isWriting()){
+		socket->shutdownWrite();
+	}
 }

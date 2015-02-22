@@ -32,7 +32,7 @@ class Socket{
 		}
 		~Socket();
 		int getSocketFd() const{
-			std::cout << "get socket fd = " << socketFd << std::endl;
+		//	std::cout << "get socket fd = " << socketFd << std::endl;
 			return socketFd;
 		}
 		int creatSocket();
@@ -40,6 +40,7 @@ class Socket{
 		void Bind(const InetAddress &);
 		void Listen();
 		int Accept(InetAddress &);
+		void shutdownWrite();
 	private:
 	 	int socketFd;
 };

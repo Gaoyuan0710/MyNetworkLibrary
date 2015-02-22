@@ -68,12 +68,15 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 		void setCloseCallBack(const CloseCallBack& cb){
 			closeCallBack = cb;
 		}
+		void send(const std::string &);
+		void shutdown();
 		void connectionEstablished();
 		void connectionDestroyed();
 	private:
 		enum State{
 			kConnecting,
 			kEstablish,
+			kDisConnectiong,
 			kDisConnected,
 		};
 		void setState(State s){
@@ -83,6 +86,10 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 		void handleWrite();
 		void handleClose();
 		void handleError();
+
+		void sendInLoop(const std::string &);
+		void shutdownInLoop();
+//		void shutdown();
 		EventLoop *loop;
 		string name;
 		State state;
@@ -96,7 +103,7 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 		MessageCallBack messageCallBack;
 		CloseCallBack closeCallBack;
 		Buffer inputBuffer;
-
+		Buffer outputBuffer;
 };
 }
 #endif
