@@ -34,7 +34,7 @@ Channel::Channel(EventLoop *loop, int socketfd)
 		closeCallBack(NULL),
 		isInHandling(false)
 {
-	std::cout << "In Channel socketFd = " << socketfd << std::endl;	
+//	std::cout << "In Channel socketFd = " << socketfd << std::endl;	
 }
 Channel::~Channel(){
 	assert(!isInHandling);
@@ -46,6 +46,7 @@ void Channel::handleEvent(Timestamp receiveTime){
 	isInHandling = true;
 	if ((revents & EPOLLHUP) && !(revents & EPOLLIN)){
 		if (closeCallBack){
+			std::cout << "Close " << std::endl;
 			closeCallBack();
 		}
 	}

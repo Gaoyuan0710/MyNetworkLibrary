@@ -57,12 +57,10 @@ void TcpConnection::connectionEstablished(){
 }
 void TcpConnection::connectionDestroyed(){
 	
-	std::cout << "TcpConnection ConnectionDestroyed" << std::endl;
+
 	assert(state == kEstablish || state == kDisConnectiong);
 	setState(kDisConnected);
 	channel->disableAll();
-	//sleep(100);
-//	closeCallBack(shared_from_this());
 
 	connectionCallBack(shared_from_this());
 	loop->removeChannel(get_pointer(channel));
@@ -74,15 +72,14 @@ void TcpConnection::handleRead(Timestamp recvTime){
 
 	ssize_t n = inputBuffer.readFd(channel->getSocket(), &saveError);
 
-	std::cout << "n = " << n << std::endl;
+	//std::cout << "n = " << n << std::endl;
 	//sleep(10);
 	if (n > 0){
 		messageCallBack(shared_from_this(), &inputBuffer, recvTime);
 	}
 	else if (n == 0){
-		std::cout << "should be closed" << std::endl;
-		std::cout << " " << state << std::endl;
-	//	sleep(100);
+		std::cout << "TcpConnection handleRead should be closed to handleClose " << state << std::endl;
+		sleep(10);
 		handleClose();
 	}
 	else {
@@ -112,6 +109,8 @@ void TcpConnection::handleWrite(){
 }
 
 void TcpConnection::handleClose(){
+	loop->assertInLoopThread();
+	assert(state == kEstablish || state == kDisConnectiong);
 	channel->disableAll();
 	closeCallBack(shared_from_this());
 }

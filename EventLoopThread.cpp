@@ -39,17 +39,17 @@ EventLoop * EventLoopThread::startLoop(){
 	thread.start();
 	
 
-	std::cout << "Thread  sssss " << std::endl;
+//	std::cout << "Thread  sssss " << std::endl;
 
 	{
 		MutexLockGuard lock(mutex);
 		while(loop == NULL){
-			std::cout << "hshh" << std::endl;
+//			std::cout << "hshh" << std::endl;
 			condition.wait();
 		}
 	}
 
-	std::cout << " Return " << std::endl;
+//	std::cout << " Return " << std::endl;
 
 	return loop;
 }
@@ -63,6 +63,6 @@ void EventLoopThread::threadFunc(){
 		condition.notify();
 	}
 
-	std::cout << "Enter Loop" << std::endl;
+//	std::cout << "Enter Loop" << std::endl;
 	loop_.loop();
 }

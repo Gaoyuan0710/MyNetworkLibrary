@@ -59,7 +59,7 @@ EventLoop::EventLoop()
 //	cout << "EventLoop Create " << this << "in thread"
 //		<< threadId << endl;
 
-	cout << "WakeUpFd = " << wakeUpFd << "Channel size = " << (wakeupChannel == NULL) << endl;
+//	cout << "WakeUpFd = " << wakeUpFd << "Channel size = " << (wakeupChannel == NULL) << endl;
 	if (t_loopInThisThread){
 		cout << "Another EventLoop " 
 			<< t_loopInThisThread 
@@ -91,7 +91,7 @@ void EventLoop::loop(){
 
 
 
-		std::cout << "EventLoop loop activeChannels size " << activeChannels.size() << std::endl;
+//		std::cout << "EventLoop loop activeChannels size " << activeChannels.size() << std::endl;
 		for (ChannelList::iterator it =
 					activeChannels.begin();
 					it != activeChannels.end();
@@ -136,12 +136,13 @@ void EventLoop::runInLoop(const Functor& cb)
 {
   if (isInLoopThread())
   {
-	  std::cout << "isInLoopThread" << std::endl;
+//	  std::cout << "EventLoop isInLoopThread" << std::endl;
+	  //sleep(10);
       cb();
     }
   else
   {
-	  std::cout << "isNotInLoopThread" << std::endl;
+//	  std::cout << "EventLoop isNotInLoopThread" << std::endl;
       queueInLoop(cb);
     }
 }
@@ -156,7 +157,7 @@ void EventLoop::queueInLoop(const Functor& cb)
 //	std::cout << pendingFunctors.size() << std::endl;
     }
 
-  cout << "flag " << !isInLoopThread() << "  " << callingPendingFunctors << endl;
+ // cout << "queueInLoop flag " << !isInLoopThread() << "  " << callingPendingFunctors << endl;
   if (!isInLoopThread() || callingPendingFunctors)
   {
       wakeup();
@@ -185,7 +186,9 @@ void EventLoop::wakeup()
 	uint64_t one = 1;
   	ssize_t n = ::write(wakeUpFd, &one, sizeof one);
   	
-	std::cout << "Write " << n << " sizeof one " << sizeof one << std::endl;
+//	std::cout << "wake up " << std::endl;
+
+	//std::cout << "Write " << n << " sizeof one " << sizeof one << std::endl;
 
 	if (n != sizeof one)
 	{
@@ -205,7 +208,10 @@ void EventLoop::doPendingFunctors()
   functors.swap(pendingFunctors);
   }
 
-  std::cout << "h " << functors.size() << std::endl;
+ 
+  if (functors.size() != 0)
+	std::cout << "doPendingFunctors size " << functors.size() << std::endl;
+ 
   for (size_t i = 0; i < functors.size(); ++i)
   {
     functors[i]();

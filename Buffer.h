@@ -92,7 +92,7 @@ class Buffer{
 		}
 		string retrieveAsString(){
 			string str(readStartIndex(), readableSize());
-			std::cout << "In Buffer " << str << std::endl;
+		//	std::cout << "In Buffer " << str << std::endl;
 			retrieveAll();
 			return str;
 		}
@@ -135,7 +135,7 @@ class Buffer{
 		//	const int iovcnt = (writeableSize < sizeof(extraBuf)) ? 2 : 1;
 
 
-			std::cout << "Before readv " << writeIndex << std::endl;
+			//std::cout << "Before readv " << writeIndex << std::endl;
 
 //			const ssize_t n = read(fd, extraBuf, sizeof(extraBuf));
 			const ssize_t n = readv(fd, vec, 2);
@@ -147,8 +147,8 @@ class Buffer{
 			else if (implicit_cast<size_t>(n) <= writeableSize_){
 				writeIndex += n;
 
-				std::cout << "Test " << extraBuf << "  " << n << std::endl;
-			std::cout << "after readv " << writeIndex << std::endl;
+			//	std::cout << "Test " << extraBuf << "  " << n << std::endl;
+			//std::cout << "after readv " << writeIndex << std::endl;
 			for (int i = writeIndex - n; i < writeIndex; i++){
 				std::cout << buffer[i];
 			}

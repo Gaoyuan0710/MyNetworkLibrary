@@ -43,8 +43,8 @@ Epoll::~Epoll(){
 Timestamp Epoll::poll(int timeOut,
 			vector <Channel *> *channel){
 
-	std::cout << "Epoll::poll begin " << endl;
-	std::cout << "event size " << events.size() << std::endl;
+//	std::cout << "Epoll::poll begin " << endl;
+	//std::cout << "event size " << events.size() << std::endl;
 	int fds = epoll_wait(epollFd, 
 				&*events.begin(), 
 				static_cast<int>(events.size()), 
@@ -61,7 +61,7 @@ Timestamp Epoll::poll(int timeOut,
 		fillActiveChannels(fds, channel);
 	}
 		
-	std::cout << "Epoll::poll end" << endl;
+//	std::cout << "Epoll::poll end" << endl;
 
 
 	return now;
@@ -71,7 +71,7 @@ void Epoll::fillActiveChannels(int numEvents,
 
 
 
-	std::cout << "fillActiveChannels " << numEvents << std::endl;
+//	std::cout << "fillActiveChannels " << numEvents << std::endl;
 	for (int i = 0; i < numEvents; i++){
 		Channel *channelTemp = static_cast<Channel *>
 			(events[i].data.ptr);
@@ -107,14 +107,18 @@ void Epoll::removeChannel(Channel *channel){
 
 	int index = channel->getIndex();
 
+	std::cout << "remove Channel befor " << channels.size() << std::endl;
 	size_t n = channels.erase(fd);
-
+	
+	std::cout << "remove Channel after " << channels.size() << std::endl;
 	struct epoll_event temp;
 
 	temp.data.ptr = channel;
 	temp.events = channel->getEvents();
 
-	epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, &temp);
+	if (index == 1){
+		epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, &temp);
+	}
 
 	channel->setIndex(-1);
 }

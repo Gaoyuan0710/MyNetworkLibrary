@@ -34,12 +34,15 @@ using std::string;
 namespace liunian{
 class Acceptor;
 class EventLoop;
-
+class EventLoopThreadPool;
 
 class TcpServer{
 	public:
 		TcpServer(EventLoop *loop,  const InetAddress &addr);
 		~TcpServer();
+
+		void setThreadNum(int nums);
+
 		void start();
 		void setConnectionCallBack(const ConnectionCallBack &cb){
 			connectionCallBack = cb;
@@ -56,7 +59,8 @@ class TcpServer{
 		void newConnection(int fd, const InetAddress &addr);
 		void removeConnection(const TcpConnectionPtr&);
 		boost::scoped_ptr<Acceptor> acceptor;
-		
+		boost::scoped_ptr<EventLoopThreadPool> threadPool;
+		void removeConnectionInLoop(const TcpConnectionPtr &);
 		ConnectionCallBack connectionCallBack;
 		MessageCallBack messageCallBack;
 		WriteCompleteCallBack writeCompleteCallBack;

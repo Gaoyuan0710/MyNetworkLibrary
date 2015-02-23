@@ -75,6 +75,9 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 		void shutdown();
 		void connectionEstablished();
 		void connectionDestroyed();
+		int getState(){
+			return state;
+		}
 	private:
 		enum State{
 			kConnecting,

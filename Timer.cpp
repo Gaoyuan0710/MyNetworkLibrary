@@ -47,7 +47,7 @@ void Timer::restart(Timestamp now){
 		expiration = ::addTime(now, interval);
 	}
 	else{
-		std::cout << "ooooooooooo" << std::endl;
+//		std::cout << "ooooooooooo" << std::endl;
 //		expiration = Timestamp();
 	}
 }
