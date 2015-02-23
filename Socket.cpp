@@ -18,6 +18,7 @@
 #include <strings.h>
 #include <iostream>
 #include <unistd.h>
+#include <netinet/tcp.h>
 
 #include "Socket.h"
 #include "InetAddress.h"
@@ -79,4 +80,10 @@ void Socket::shutdownWrite(){
 	if (shutdown(socketFd, SHUT_WR) < 0){
 		cout << "shutdown write error" << endl;
 	}
+}
+void Socket::setTcpNoDelay(bool on){
+	int optval = on ? 1 : 0;
+
+	setsockopt(socketFd, IPPROTO_TCP, TCP_NODELAY,
+				&optval, sizeof optval);
 }

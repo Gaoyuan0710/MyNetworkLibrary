@@ -68,6 +68,9 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 		void setCloseCallBack(const CloseCallBack& cb){
 			closeCallBack = cb;
 		}
+		void setWriteCompleteCallBack(const WriteCompleteCallBack &cb){
+			writeCompleteCallBack = cb;
+		}
 		void send(const std::string &);
 		void shutdown();
 		void connectionEstablished();
@@ -89,6 +92,7 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 
 		void sendInLoop(const std::string &);
 		void shutdownInLoop();
+		void setTcpNoDelay(bool);
 //		void shutdown();
 		EventLoop *loop;
 		string name;
@@ -102,6 +106,7 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 		ConnectionCallBack connectionCallBack;
 		MessageCallBack messageCallBack;
 		CloseCallBack closeCallBack;
+		WriteCompleteCallBack writeCompleteCallBack;
 		Buffer inputBuffer;
 		Buffer outputBuffer;
 };

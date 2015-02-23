@@ -66,10 +66,11 @@ void TcpServer::newConnection(int socketFd, const InetAddress &addr){
 
 	//newConnect.setConnectionCallBack(connectionCallBack);
 	newConnect->setMessageCallBack(messageCallBack);
-
+	newConnect->setWriteCompleteCallBack(writeCompleteCallBack);
 	newConnect->setCloseCallBack(
 				boost::bind(&TcpServer::removeConnection, this, _1));
 	newConnect->connectionEstablished();
+
 }
 void TcpServer::removeConnection(const TcpConnectionPtr & connect){
 	size_t n = connections.erase(connect->getname());

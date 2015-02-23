@@ -18,6 +18,7 @@
 #include <assert.h>
 #include <sys/eventfd.h>
 #include <boost/bind.hpp>
+#include <signal.h>
 
 #include "EventLoop.h"
 #include "Channel.h"
@@ -220,3 +221,14 @@ void EventLoop::handleRead()
 	  std::cout << "EventLoop::handleRead() reads " << n << " bytes instead of 8";
     }
 }
+
+
+
+class IgnoreSigPipe{
+	public:
+		IgnoreSigPipe(){
+			signal(SIGPIPE, SIG_IGN);
+		}
+};
+
+IgnoreSigPipe initObj;

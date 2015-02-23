@@ -41,6 +41,7 @@ class Socket{
 		void Listen();
 		int Accept(InetAddress &);
 		void shutdownWrite();
+		void setTcpNoDelay(bool on);
 	private:
 	 	int socketFd;
 };

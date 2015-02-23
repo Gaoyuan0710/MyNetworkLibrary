@@ -47,6 +47,9 @@ class TcpServer{
 		void setMessageCallBack(const MessageCallBack &cb){
 			messageCallBack = cb;
 		}
+		void setWriteCompleteCallBack(const WriteCompleteCallBack &cb){
+			writeCompleteCallBack = cb;
+		}
 	private:
 		EventLoop *loop;
 		string name;
@@ -56,7 +59,8 @@ class TcpServer{
 		
 		ConnectionCallBack connectionCallBack;
 		MessageCallBack messageCallBack;
-	
+		WriteCompleteCallBack writeCompleteCallBack;
+
 		bool startFlag;
 		int nextConnectId;
 		ConnectionMap  connections;		

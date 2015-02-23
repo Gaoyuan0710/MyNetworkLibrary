@@ -100,6 +100,9 @@ void TcpConnection::handleWrite(){
 			if (outputBuffer.readableSize() == 0){
 				channel->disableWriting();
 
+				if (writeCompleteCallBack){
+					loop->queueInLoop(boost::bind(writeCompleteCallBack, shared_from_this()));
+				}
 				if (state == kDisConnectiong){
 					shutdownInLoop();
 				}
@@ -131,9 +134,6 @@ void TcpConnection::sendInLoop(const std::string &message){
 	ssize_t writeLen = 0;
 
 	if (!channel->isWriting() && outputBuffer.readableSize() == 0){
-		std::cout << "send return " << message << std::endl;
-
-
 		writeLen = write(channel->getSocket(), message.data(), message.size());
 		if (writeLen >= 0){
 			if (implicit_cast<size_t>(writeLen) < message.size()){
@@ -141,6 +141,9 @@ void TcpConnection::sendInLoop(const std::string &message){
 				if (!channel->isWriting()){
 					channel->enableWriting();
 				}
+			}
+			else if (writeCompleteCallBack){
+				loop->queueInLoop(boost::bind(writeCompleteCallBack, shared_from_this()));
 			}
 			else{
 				writeLen = 0;
@@ -159,4 +162,7 @@ void TcpConnection::shutdownInLoop(){
 	if (!channel->isWriting()){
 		socket->shutdownWrite();
 	}
+}
+void TcpConnection::setTcpNoDelay(bool on){
+	socket->setTcpNoDelay(on);
 }
