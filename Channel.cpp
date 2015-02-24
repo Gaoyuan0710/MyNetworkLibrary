@@ -74,7 +74,7 @@ void Channel::update(){
 	loop->updateChannel(this);
 }
 void Channel::disableAll(){
-	events |= 0;
+	events = 0;
 	update();
 }
 void Channel::disableWriting(){

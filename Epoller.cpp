@@ -18,6 +18,7 @@
 #include <vector>
 #include <sys/epoll.h>
 #include <errno.h>
+#include <boost/static_assert.hpp>
 
 #include "Epoller.h"
 #include "Timestamp.h"
@@ -32,13 +33,14 @@ Epoll::Epoll(EventLoop *loop)
 		events(16)
 	
 {
-	epollFd = epoll_create(1);
+	epollFd = epoll_create1(EPOLL_CLOEXEC);
 
-	if (epollFd <= 0){
+	if (epollFd < 0){
 		cout << "epoll_create error" << endl;
 	}
 }
 Epoll::~Epoll(){
+	close(epollFd);
 }
 Timestamp Epoll::poll(int timeOut,
 			vector <Channel *> *channel){
@@ -70,11 +72,17 @@ void Epoll::fillActiveChannels(int numEvents,
 			ChannelList *activeChannels) const{
 
 
+	//assert(implicit_cast<size_t>(numEvents) <= events.size());
+
 
 //	std::cout << "fillActiveChannels " << numEvents << std::endl;
 	for (int i = 0; i < numEvents; i++){
-		Channel *channelTemp = static_cast<Channel *>
-			(events[i].data.ptr);
+		Channel *channelTemp = static_cast<Channel *>(events[i].data.ptr);
+
+		int fd = channelTemp->getSocket();
+		ChannelMap::const_iterator it = channels.find(fd);
+		assert(it != channels.end());
+		assert(it->second == channelTemp);
 
 
 		channelTemp->setRevents(events[i].events);
@@ -82,35 +90,66 @@ void Epoll::fillActiveChannels(int numEvents,
 	}
 }
 void Epoll::updateChannel(Channel *channel){
+	assertInLoopThread();
+
 	struct epoll_event temp;
-
-	const int index = channel->getIndex();
-
+	bzero(&temp, sizeof(temp));
 	temp.data.ptr = channel;
 	temp.events = channel->getEvents();
 	
-	int fd = channel->getSocket();
+	const int index = channel->getIndex();
 
-	if (index == -1){
-		channels[fd] = channel;
+	if (index == -1 || index == 2){
 
+		int fd = channel->getSocket();
+
+		if (index == -1){
+			assert(channels.find(fd) == channels.end());
+			channels[fd] = channel;
+		}
+		else{
+			assert(channels.find(fd) != channels.end() );
+			assert(channels[fd] == channel);
+
+		//	epoll_ctl(epollFd, EPOLL_CTL_MOD, fd, &temp);
+		}
 		channel->setIndex(1);
 		epoll_ctl(epollFd, EPOLL_CTL_ADD, fd, &temp);
+
 	}
 	else{
+		int fd = channel->getSocket();
 
-		epoll_ctl(epollFd, EPOLL_CTL_MOD, fd, &temp);
+		assert(channels.find(fd) != channels.end() );
+		assert(channels[fd] == channel);
+		assert(index == 1);
+		if (channel->isNoEvent()){
+			epoll_ctl(epollFd, EPOLL_CTL_DEL, fd, &temp);
+			channel->setIndex(2);
+		}
+		else{
+			epoll_ctl(epollFd, EPOLL_CTL_MOD, fd, &temp);
+		}
 	}
 }
 void Epoll::removeChannel(Channel *channel){
+	assertInLoopThread();
+
 	int fd = channel->getSocket();
+
+	assert(channels.find(fd) != channels.end());
+	assert(channels[fd] == channel);
+	//assert(channel->isNoEvent());
+
 
 	int index = channel->getIndex();
 
-	std::cout << "remove Channel befor " << channels.size() << std::endl;
+	assert(index == 1 || index == 2);
+//	std::cout << "remove Channel befor " << channels.size() << std::endl;
 	size_t n = channels.erase(fd);
-	
-	std::cout << "remove Channel after " << channels.size() << std::endl;
+
+	assert(n == 1);
+//	std::cout << "remove Channel after " << channels.size() << std::endl;
 	struct epoll_event temp;
 
 	temp.data.ptr = channel;

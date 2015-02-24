@@ -134,7 +134,7 @@ void ThreadPool::beginRunning(){
 
 void ThreadPool::pthreadPoolmanager(){
 	while (isRunning){
-		sleep(5);
+		//sleep(5);
 
 		int work_size = workQueue.size();
 		int pthread_num = threads.size();

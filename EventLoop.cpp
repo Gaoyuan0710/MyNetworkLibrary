@@ -75,7 +75,8 @@ EventLoop::EventLoop()
 	
 }
 EventLoop::~EventLoop(){
-
+	close(wakeUpFd);
+	t_loopInThisThread = NULL;
 }
 void EventLoop::loop(){
 
@@ -105,9 +106,16 @@ void EventLoop::loop(){
 //	loopFlag = false;
 //}
 void EventLoop::updateChannel(Channel *channel){
+	assert(channel->getOwnLoop() == this);
+	assertInLoopThread();
+
+
 	epoll->updateChannel(channel);
 }
 void EventLoop::removeChannel(Channel *channel){
+	assert(channel->getOwnLoop() == this);
+	assertInLoopThread();
+
 	epoll->removeChannel(channel);
 }
 bool EventLoop::isInLoopThread(){

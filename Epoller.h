@@ -46,6 +46,9 @@ class Epoll{
 		void removeChannel(Channel *channel);
 		void fillActiveChannels(int numEvents, 
 					ChannelList *channelList) const;
+		void assertInLoopThread(){
+					loop->assertInLoopThread();
+				}
 	private:
 		int epollFd;
 		EventList events;

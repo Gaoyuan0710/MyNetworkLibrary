@@ -108,8 +108,8 @@ class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{
 		InetAddress otherAddr;
 		ConnectionCallBack connectionCallBack;
 		MessageCallBack messageCallBack;
-		CloseCallBack closeCallBack;
 		WriteCompleteCallBack writeCompleteCallBack;
+		CloseCallBack closeCallBack;
 		Buffer inputBuffer;
 		Buffer outputBuffer;
 };

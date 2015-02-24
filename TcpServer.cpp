@@ -31,10 +31,12 @@ TcpServer::TcpServer(EventLoop *loop, const InetAddress &addr):
 	acceptor(new Acceptor(loop, addr)),
 	threadPool(new EventLoopThreadPool(loop)),
 	startFlag(false),
-	nextConnectId(1){
-		acceptor->setDealNewConnectionCallBack(
-					boost::bind(&TcpServer::newConnection, this, _1, _2));
-	}
+	nextConnectId(1)
+{
+	acceptor->setDealNewConnectionCallBack(
+				boost::bind(&TcpServer::newConnection, this, _1, _2));
+}
+
 TcpServer::~TcpServer(){
 
 }
@@ -73,8 +75,8 @@ void TcpServer::newConnection(int socketFd, const InetAddress &addr){
 	
 	TcpConnectionPtr newConnect(new TcpConnection(ioLoop, connectionName, socketFd, localAddr, addr));
 	connections[connectionName] = newConnect;
-	newConnect->setConnectionCallBack(connectionCallBack);
 
+	newConnect->setConnectionCallBack(connectionCallBack);
 	newConnect->setMessageCallBack(messageCallBack);
 	newConnect->setWriteCompleteCallBack(writeCompleteCallBack);
 	newConnect->setCloseCallBack(
@@ -93,8 +95,10 @@ void TcpServer::removeConnectionInLoop(const TcpConnectionPtr & connect){
 	loop->assertInLoopThread();
 
 	std::cout << " TcpServer removeConnectionInLoop" << std::endl;
-	sleep(10);
+//	sleep(10);
 	size_t n = connections.erase(connect->getname());
+
+	assert(n == 1);
 
 	EventLoop *ioLoop = connect->getLoop();
 

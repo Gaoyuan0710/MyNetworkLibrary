@@ -58,6 +58,9 @@ class Channel : boost::noncopyable{
 		int getEvents();
 		int getSocket();
 		int getIndex();
+		EventLoop *getOwnLoop(){
+			return loop;
+		}
 		bool isNoEvent() const{
 			return events == 0;
 		}

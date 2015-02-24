@@ -48,9 +48,12 @@ TcpConnection::TcpConnection(
 						boost::bind(&TcpConnection::handleError, this));
 		}
 TcpConnection::~TcpConnection(){
+	std::cout << "TcoConnection " << this << " fd = " << channel->getSocket() << std::endl;
 }
 
 void TcpConnection::connectionEstablished(){
+	loop->assertInLoopThread();
+	assert(state == kConnecting);
 	setState(kEstablish);
 	channel->enableReading();
 	connectionCallBack(shared_from_this());
@@ -58,6 +61,7 @@ void TcpConnection::connectionEstablished(){
 void TcpConnection::connectionDestroyed(){
 	
 
+	loop->assertInLoopThread();
 	assert(state == kEstablish || state == kDisConnectiong);
 	setState(kDisConnected);
 	channel->disableAll();
@@ -79,7 +83,7 @@ void TcpConnection::handleRead(Timestamp recvTime){
 	}
 	else if (n == 0){
 		std::cout << "TcpConnection handleRead should be closed to handleClose " << state << std::endl;
-		sleep(10);
+		//sleep(10);
 		handleClose();
 	}
 	else {
@@ -89,6 +93,8 @@ void TcpConnection::handleRead(Timestamp recvTime){
 }
 
 void TcpConnection::handleWrite(){
+	loop->assertInLoopThread();
+
 	if (channel->isWriting()){
 		ssize_t writeLen = write(channel->getSocket(), outputBuffer.readStartIndex(), outputBuffer.readableSize());
 
@@ -110,6 +116,7 @@ void TcpConnection::handleWrite(){
 
 void TcpConnection::handleClose(){
 	loop->assertInLoopThread();
+	std::cout << "TcpConnection handleClose state is " << state << std::endl;
 	assert(state == kEstablish || state == kDisConnectiong);
 	channel->disableAll();
 	closeCallBack(shared_from_this());
@@ -130,6 +137,8 @@ void TcpConnection::send(const std::string &message){
 	}
 }
 void TcpConnection::sendInLoop(const std::string &message){
+	loop->assertInLoopThread();
+
 	ssize_t writeLen = 0;
 
 	if (!channel->isWriting() && outputBuffer.readableSize() == 0){
@@ -158,6 +167,8 @@ void TcpConnection::shutdown(){
 	}
 }
 void TcpConnection::shutdownInLoop(){
+	loop->assertInLoopThread();
+
 	if (!channel->isWriting()){
 		socket->shutdownWrite();
 	}
